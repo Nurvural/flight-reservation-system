@@ -1,11 +1,24 @@
-# Flight Reservation Microservices System
+✈️ Flight Reservation Microservices System
 
-## Proje Açıklaması
-Bu proje, microservice mimarisi ile geliştirilmiş bir uçuş rezervasyon sistemidir. Sistem; uçuş yönetimi, kullanıcı yönetimi, rezervasyon ve admin işlemleri gibi modülleri içerir. Redis ile cache yönetimi, Kafka ile event-driven akış ve JWT ile güvenlik uygulanmıştır.  
+🔹 Proje Hakkında
+Bu proje, uçuş rezervasyonlarını yönetmek için geliştirilmiş bir microservices tabanlı backend sistemidir.
 
-## Teknolojiler
+Sistem aşağıdaki microservisleri içerir:
+
+Flight Service → Uçuş CRUD ve listeleme
+
+Reservation Service → Rezervasyon oluşturma ve event üretme
+
+User Service → Kullanıcı yönetimi ve JWT authentication
+
+Admin Controller → Airport ve Flight CRUD, rezervasyon yönetimi
+
+🛠️ Teknoloji Yığını
+
+Backend & Core
 - Java 21 / Spring Boot
 - Spring Data JPA
+- REST API
 - Stream API
 - Spring Validation
 - Global Exception Handling
@@ -13,26 +26,24 @@ Bu proje, microservice mimarisi ile geliştirilmiş bir uçuş rezervasyon siste
 - Transactional işlemler
 - Lombok  
 - PostgreSQL
-- Redis
-- Apache Kafka
 - JWT & Spring Security
-- SLF4J / Logback
-- JUnit / Mockito
-- Swagger/OpenAPI
-  
-## Özellikler
-- **Flight Service**: Uçuş CRUD ve listeleme
-- **Reservation Service**: Rezervasyon oluşturma, Kafka event üretimi, cache
-- **User Service**: Kullanıcı yönetimi ve JWT tabanlı authentication
-- **Admin Controller**: Airport & Flight CRUD, rezervasyon yönetimi
-- **Redis**: Flight ve Reservation sorguları için cache
-- **Kafka**: Reservation event’leri publish/subscribe
-- **PostgreSQL**: Her microservice kendi veritabanına sahiptir (dev ortamda aynı DB kullanılabilir)
 
-## Mimari
-- Microservice yapısı ile bağımsız servisler
-- Event-driven akış Kafka ile yönetilir
-- Redis ile performans optimizasyonu
-- JWT ve Spring Security ile güvenlik
+ Microservices & Architecture
+- Spring Cloud 
+- Eureka / Consul
+- API Gateway (Spring Cloud Gateway) → Microservice yönlendirmesi
+- Resiliency (Circuit Breaker / Resilience4J) → Hata toleransı
 
+Caching & Performance
+- Redis → Uçuş sorguları ve rezervasyon cache’leme
+- Spring Cache → Cache yönetimi
 
+ Messaging & Event-Driven
+- RabbitMQ veya Kafka → Rezervasyon oluşturulduğunda event üretmek için
+
+Logging & Monitoring
+- SLF4J / Logback 
+
+Testing / Quality
+- JUnit 
+- Mockito 
