@@ -30,7 +30,7 @@ Backend & Core
 
  Microservices & Architecture
 - Spring Cloud 
-- Eureka / Consul
+- Eureka 
 - API Gateway (Spring Cloud Gateway) → Microservice yönlendirmesi
 - Resiliency (Circuit Breaker / Resilience4J) → Hata toleransı
 
