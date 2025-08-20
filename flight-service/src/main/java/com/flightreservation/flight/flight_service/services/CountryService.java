@@ -3,6 +3,7 @@ package com.flightreservation.flight.flight_service.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.flightreservation.flight.flight_service.dto.CountryDTO;
@@ -48,7 +49,7 @@ public class CountryService {
     }
 
     public List<CountryDTO > getAllCountries() {
-        return countryRepository.findAll()
+        return countryRepository.findAll(Sort.by(Sort.Direction.ASC, "id"))
                 .stream()
                 .map(countryMapper::toDTO)
                 .collect(Collectors.toList());

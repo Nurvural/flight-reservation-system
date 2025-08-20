@@ -3,6 +3,7 @@ package com.flightreservation.flight.flight_service.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.flightreservation.flight.flight_service.dto.AirportDTO;
@@ -58,7 +59,7 @@ public class AirportService {
     }
 
     public List<AirportDTO> getAllAirports() {
-        return airportRepository.findAll()
+        return airportRepository.findAll(Sort.by(Sort.Direction.ASC, "id"))
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());

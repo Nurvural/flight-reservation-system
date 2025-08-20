@@ -3,6 +3,7 @@ package com.flightreservation.flight.flight_service.dto.requestDTO;
 import lombok.*;
 import java.time.LocalDateTime;
 
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -23,19 +24,23 @@ public class FlightUpdateRequest {
     @NotNull(message = "Arrival airport id boş olamaz")
     private Long arrivalAirportId;
 
+    @Future(message = "Departure time gelecekte olmalı")
     @NotNull(message = "Departure time boş olamaz")
     private LocalDateTime departureTime;
 
+    @Future(message = "Arrival time gelecekte olmalı")
     @NotNull(message = "Arrival time boş olamaz")
     private LocalDateTime arrivalTime;
 
     @Positive(message = "Price sıfırdan büyük olmalı")
-    private double price;
+    @NotNull(message = "Price boş olamaz")
+    private Double price;
 
     @NotBlank(message = "Seat class boş olamaz")
     private String seatClass;
 
     @Positive(message = "Total seats sıfırdan büyük olmalı")
+    @NotNull(message = "Total seats boş olamaz")
     private Integer totalSeats;
 
     @PositiveOrZero(message = "Available seats sıfır veya pozitif olmalı")

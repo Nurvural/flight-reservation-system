@@ -12,6 +12,6 @@ public interface CityMapper {
 	
 	@Mapping(source = "country.id", target = "countryId")
 	CityDTO toDTO(City city);
-	
+
 	City toEntity(CityDTO cityDTO);
 }
