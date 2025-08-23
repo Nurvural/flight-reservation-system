@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.flightreservation.flight.flight_service.dto.AirlineDTO;
 import com.flightreservation.flight.flight_service.entities.Airline;
 import com.flightreservation.flight.flight_service.exception.ResourceNotFoundException;
+import com.flightreservation.flight.flight_service.mapper.AirlineMapper;
 import com.flightreservation.flight.flight_service.exception.BusinessException;
 import com.flightreservation.flight.flight_service.repositories.AirlineRepository;
 
@@ -16,17 +17,11 @@ import com.flightreservation.flight.flight_service.repositories.AirlineRepositor
 public class AirlineService {
 
     private final AirlineRepository airlineRepository;
+    private final AirlineMapper airlineMapper;
 
-    public AirlineService(AirlineRepository airlineRepository) {
+    public AirlineService(AirlineRepository airlineRepository, AirlineMapper airlineMapper) {
         this.airlineRepository = airlineRepository;
-    }
-
-    private AirlineDTO mapToDTO(Airline airline) {
-        return AirlineDTO.builder()
-                .id(airline.getId())
-                .name(airline.getName())
-                .code(airline.getCode())
-                .build();
+        this.airlineMapper = airlineMapper;
     }
 
     public AirlineDTO createAirline(AirlineDTO dto) {
@@ -34,10 +29,8 @@ public class AirlineService {
             throw new BusinessException("Airline code already exists: " + dto.getCode());
         }
 
-        Airline airline = new Airline();
-        airline.setName(dto.getName());
-        airline.setCode(dto.getCode());
-        return mapToDTO(airlineRepository.save(airline));
+        Airline airline = airlineMapper.toEntity(dto);
+        return airlineMapper.toDTO(airlineRepository.save(airline));
     }
 
     public AirlineDTO updateAirline(Long id, AirlineDTO dto) {
@@ -46,20 +39,19 @@ public class AirlineService {
 
         airline.setName(dto.getName());
         airline.setCode(dto.getCode());
-        return mapToDTO(airlineRepository.save(airline));
+        return airlineMapper.toDTO(airlineRepository.save(airline));
     }
 
     public List<AirlineDTO> getAllAirlines() {
-        return airlineRepository.findAll(Sort.by(Sort.Direction.ASC, "id"))
-                .stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
+        List<Airline> airlines = airlineRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
+        return airlineMapper.toDTOList(airlines);
     }
+
 
     public AirlineDTO getAirlineById(Long id) {
         Airline airline = airlineRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Airline not found with id: " + id));
-        return mapToDTO(airline);
+        return airlineMapper.toDTO(airline);
     }
 
     public void deleteAirline(Long id) {
