@@ -17,9 +17,11 @@ import com.flightreservation.flight.reservation_service.mapper.ReservationMapper
 import com.flightreservation.flight.reservation_service.repositories.ReservationRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReservationService {
 
 	private final ReservationRepository reservationRepository;
@@ -27,12 +29,16 @@ public class ReservationService {
 	private final FlightClient flightClient;
 
 	public ReservationResponse createReservation(ReservationCreateRequest request) {
+		log.info("Creating reservation: {}", request);
 		// Flight servise sadece ID kontrolü için çağrı
 		try {
 			flightClient.checkFlightExists(request.getFlightId()); // Eğer flight yoksa FeignException.NotFound fırlatır
+			log.info("Flight exists with id: {}", request.getFlightId());
 		} catch (feign.FeignException.NotFound ex) {
+			log.error("Flight not found with id: {}", request.getFlightId());
 			throw new ResourceNotFoundException("Flight not found with id: " + request.getFlightId());
 		} catch (feign.FeignException ex) {
+			log.error("Error calling Flight service: {}", ex.getMessage());
 			throw new BusinessException("Error calling Flight service: " + ex.getMessage());
 		}
 
@@ -41,17 +47,22 @@ public class ReservationService {
 		reservation.setReservationDate(LocalDateTime.now());
 		// Reservation'ı kaydet
 		Reservation saved = reservationRepository.save(reservation);
+		log.info("Reservation created with id: {}", saved.getId());
 		// DTO'ya çevir ve geri döndür
 		return mapper.toDTO(saved);
 	}
 
 	public ReservationResponse updateReservation(Long id, ReservationCreateRequest request) {
+		log.info("Updating reservation with id: {}", id);
 		// Mevcut reservation kontrolü
-		Reservation existing = reservationRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + id));
+		Reservation existing = reservationRepository.findById(id).orElseThrow(() -> {
+			log.error("Reservation not found with id: {}", id);
+			return new ResourceNotFoundException("Reservation not found with id: " + id);
+		});
 
 		// Flight servise sadece ID kontrolü için çağrı
 		flightClient.checkFlightExists(request.getFlightId()); // Eğer flight yoksa FeignException.NotFound fırlatır
+		log.info("Flight exists with id: {}", request.getFlightId());
 
 		// DTO'daki alanları entity'ye güncelle
 		existing.setPassengerName(request.getPassengerName());
@@ -65,25 +76,36 @@ public class ReservationService {
 
 		// Güncellenen reservation'ı kaydet
 		Reservation updated = reservationRepository.save(existing);
-
+		log.info("Reservation updated with id: {}", updated.getId());
 		// DTO'ya çevirip döndür
 		return mapper.toDTO(updated);
 	}
 
 	public List<ReservationResponse> getAllReservations() {
-		return reservationRepository.findAll(Sort.by(Sort.Direction.ASC, "id")).stream().map(mapper::toDTO)
-				.collect(Collectors.toList());
+		log.info("Fetching all reservations");
+		List<ReservationResponse> reservations = reservationRepository.findAll(Sort.by(Sort.Direction.ASC, "id"))
+				.stream().map(mapper::toDTO).collect(Collectors.toList());
+		log.info("Total reservations found: {}", reservations.size());
+		return reservations;
 	}
 
 	public ReservationResponse getReservationById(Long id) {
-		Reservation reservation = reservationRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("Reservation not found" + id));
+		log.info("Fetching reservation with id: {}", id);
+		Reservation reservation = reservationRepository.findById(id).orElseThrow(() -> {
+			log.error("Reservation not found with id: {}", id);
+			return new ResourceNotFoundException("Reservation not found with id: " + id);
+		});
+		log.info("Reservation fetched with id: {}", reservation.getId());
 		return mapper.toDTO(reservation);
 	}
 
 	public void deleteReservation(Long id) {
-		Reservation reservation = reservationRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("Reservation not found" + id));
+		log.info("Deleting reservation with id: {}", id);
+		Reservation reservation = reservationRepository.findById(id).orElseThrow(() -> {
+			log.error("Reservation not found with id: {}", id);
+			return new ResourceNotFoundException("Reservation not found with id: " + id);
+		});
 		reservationRepository.delete(reservation);
+		log.info("Reservation deleted with id: {}", id);
 	}
 }
