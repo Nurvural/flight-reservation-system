@@ -17,90 +17,128 @@ import com.flightreservation.flight.flight_service.repositories.AirlineRepositor
 import com.flightreservation.flight.flight_service.repositories.AirportRepository;
 import com.flightreservation.flight.flight_service.repositories.FlightRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class FlightService {
 
-    private final FlightRepository flightRepository;
-    private final AirportRepository airportRepository;
-    private final AirlineRepository airlineRepository;
-    private final FlightMapper flightMapper;
+	private final FlightRepository flightRepository;
+	private final AirportRepository airportRepository;
+	private final AirlineRepository airlineRepository;
+	private final FlightMapper flightMapper;
 
-    public FlightService(FlightRepository flightRepository,
-                         AirportRepository airportRepository,
-                         AirlineRepository airlineRepository,
-                         FlightMapper flightMapper) {
-        this.flightRepository = flightRepository;
-        this.airportRepository = airportRepository;
-        this.airlineRepository = airlineRepository;
-        this.flightMapper = flightMapper;
-    }
+	public FlightService(FlightRepository flightRepository, AirportRepository airportRepository,
+			AirlineRepository airlineRepository, FlightMapper flightMapper) {
+		this.flightRepository = flightRepository;
+		this.airportRepository = airportRepository;
+		this.airlineRepository = airlineRepository;
+		this.flightMapper = flightMapper;
+	}
+
 	// Yeni uçuş oluşturma
-    public FlightResponse createFlight(FlightCreateRequest flightCreateRequest) {
+	public FlightResponse createFlight(FlightCreateRequest flightCreateRequest) {
+		log.info("Creating flight: {}", flightCreateRequest);
 
-    	// İş kuralı kontrolü: boş koltuk sayısı toplam koltuktan büyük olamaz
-        if (flightCreateRequest.getAvailableSeats() != null &&
-            flightCreateRequest.getAvailableSeats() > flightCreateRequest.getTotalSeats()) {
-            throw new BusinessException("Available seats cannot exceed total seats");
-        }
+		// İş kuralı kontrolü: boş koltuk sayısı toplam koltuktan büyük olamaz
+		if (flightCreateRequest.getAvailableSeats() != null
+				&& flightCreateRequest.getAvailableSeats() > flightCreateRequest.getTotalSeats()) {
+			log.warn("Available seats {} exceed total seats {}", flightCreateRequest.getAvailableSeats(),
+					flightCreateRequest.getTotalSeats());
+			throw new BusinessException("Available seats cannot exceed total seats");
+		}
 
-        Flight flight = flightMapper.toEntity(flightCreateRequest);
+		Flight flight = flightMapper.toEntity(flightCreateRequest);
 
-        flight.setDepartureAirport(airportRepository.findById(flightCreateRequest.getDepartureAirportId())
-                .orElseThrow(() -> new ResourceNotFoundException("Departure airport not found")));
+		flight.setDepartureAirport(
+				airportRepository.findById(flightCreateRequest.getDepartureAirportId()).orElseThrow(() -> {
+					log.error("Departure airport not found with id: {}", flightCreateRequest.getDepartureAirportId());
+					return new ResourceNotFoundException("Departure airport not found");
+				}));
 
-        flight.setArrivalAirport(airportRepository.findById(flightCreateRequest.getArrivalAirportId())
-                .orElseThrow(() -> new ResourceNotFoundException("Arrival airport not found")));
+		flight.setArrivalAirport(
+				airportRepository.findById(flightCreateRequest.getArrivalAirportId()).orElseThrow(() -> {
+					log.error("Arrival airport not found with id: {}", flightCreateRequest.getArrivalAirportId());
+					return new ResourceNotFoundException("Arrival airport not found");
+				}));
 
-        flight.setAirline(airlineRepository.findById(flightCreateRequest.getAirlineId())
-                .orElseThrow(() -> new ResourceNotFoundException("Airline not found")));
+		flight.setAirline(airlineRepository.findById(flightCreateRequest.getAirlineId()).orElseThrow(() -> {
+			log.error("Airline not found with id: {}", flightCreateRequest.getAirlineId());
+			return new ResourceNotFoundException("Airline not found");
+		}));
 
-        Flight savedFlight = flightRepository.save(flight);
+		Flight savedFlight = flightRepository.save(flight);
+		log.info("Flight created with id: {}", savedFlight.getId());
 
-        return flightMapper.toResponse(savedFlight);
-    }
+		return flightMapper.toResponse(savedFlight);
+	}
+
 	// Mevcut uçuşu güncelleme
-    public FlightResponse updateFlight(Long id, FlightUpdateRequest flightUpdateRequest) {
+	public FlightResponse updateFlight(Long id, FlightUpdateRequest flightUpdateRequest) {
+		log.info("Updating flight with id: {}", id);
 
-        Flight existingFlight = flightRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Flight not found with id: " + id));
+		Flight existingFlight = flightRepository.findById(id).orElseThrow(() -> {
+			log.error("Flight not found with id: {}", id);
+			return new ResourceNotFoundException("Flight not found with id: " + id);
+		});
 
-        if (flightUpdateRequest.getAvailableSeats() != null &&
-            flightUpdateRequest.getAvailableSeats() > flightUpdateRequest.getTotalSeats()) {
-            throw new BusinessException("Available seats cannot exceed total seats");
-        }
+		if (flightUpdateRequest.getAvailableSeats() != null
+				&& flightUpdateRequest.getAvailableSeats() > flightUpdateRequest.getTotalSeats()) {
+			log.warn("Available seats {} exceed total seats {}", flightUpdateRequest.getAvailableSeats(),
+					flightUpdateRequest.getTotalSeats());
+			throw new BusinessException("Available seats cannot exceed total seats");
+		}
 
-        Flight updatedFlight = flightMapper.toEntity(flightUpdateRequest);
-        updatedFlight.setId(existingFlight.getId()); // Mevcut ID’yi koru
+		Flight updatedFlight = flightMapper.toEntity(flightUpdateRequest);
+		updatedFlight.setId(existingFlight.getId()); // Mevcut ID’yi koru
 
-        updatedFlight.setDepartureAirport(airportRepository.findById(flightUpdateRequest.getDepartureAirportId())
-                .orElseThrow(() -> new ResourceNotFoundException("Departure airport not found")));
+		updatedFlight.setDepartureAirport(
+				airportRepository.findById(flightUpdateRequest.getDepartureAirportId()).orElseThrow(() -> {
+					log.error("Departure airport not found with id: {}", flightUpdateRequest.getDepartureAirportId());
+					return new ResourceNotFoundException("Departure airport not found");
+				}));
 
-        updatedFlight.setArrivalAirport(airportRepository.findById(flightUpdateRequest.getArrivalAirportId())
-                .orElseThrow(() -> new ResourceNotFoundException("Arrival airport not found")));
+		updatedFlight.setArrivalAirport(
+				airportRepository.findById(flightUpdateRequest.getArrivalAirportId()).orElseThrow(() -> {
+					log.error("Arrival airport not found with id: {}", flightUpdateRequest.getArrivalAirportId());
+					return new ResourceNotFoundException("Arrival airport not found");
+				}));
 
-        updatedFlight.setAirline(airlineRepository.findById(flightUpdateRequest.getAirlineId())
-                .orElseThrow(() -> new ResourceNotFoundException("Airline not found")));
+		updatedFlight.setAirline(airlineRepository.findById(flightUpdateRequest.getAirlineId()).orElseThrow(() -> {
+			log.error("Airline not found with id: {}", flightUpdateRequest.getAirlineId());
+			return new ResourceNotFoundException("Airline not found");
+		}));
 
-        Flight savedFlight = flightRepository.save(updatedFlight);
+		Flight savedFlight = flightRepository.save(updatedFlight);
+		log.info("Flight updated with id: {}", savedFlight.getId());
+		return flightMapper.toResponse(savedFlight);
+	}
 
-        return flightMapper.toResponse(savedFlight);
-    }
+	public List<FlightResponse> getAllFlights() {
+		log.info("Fetching all flights");
+		List<FlightResponse> flights = flightRepository.findAll(Sort.by(Sort.Direction.ASC, "id")).stream()
+				.map(flightMapper::toResponse).collect(Collectors.toList());
+		log.info("Total flights found: {}", flights.size());
+		return flights;
+	}
 
-    public List<FlightResponse> getAllFlights() {
-        return flightRepository.findAll(Sort.by(Sort.Direction.ASC, "id")).stream()
-                .map(flightMapper::toResponse)
-                .collect(Collectors.toList());
-    }
+	public FlightResponse getFlightById(Long id) {
+		log.info("Fetching flight with id: {}", id);
+		Flight flight = flightRepository.findById(id).orElseThrow(() -> {
+			log.error("Flight not found with id: {}", id);
+			return new ResourceNotFoundException("Flight not found with id: " + id);
+		});
+		log.info("Flight fetched: {}", flight.getId());
+		return flightMapper.toResponse(flight);
+	}
 
-    public FlightResponse getFlightById(Long id) {
-        Flight flight = flightRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Flight not found with id: " + id));
-        return flightMapper.toResponse(flight);
-    }
-
-    public void deleteFlight(Long id) {
-        Flight flight = flightRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Flight not found with id: " + id));
-        flightRepository.delete(flight);
-    }
+	public void deleteFlight(Long id) {
+		log.info("Deleting flight with id: {}", id);
+		Flight flight = flightRepository.findById(id).orElseThrow(() -> {
+			log.error("Flight not found with id: {}", id);
+			return new ResourceNotFoundException("Flight not found with id: " + id);
+		});
+		flightRepository.delete(flight);
+		log.info("Flight deleted with id: {}", id);
+	}
 }
