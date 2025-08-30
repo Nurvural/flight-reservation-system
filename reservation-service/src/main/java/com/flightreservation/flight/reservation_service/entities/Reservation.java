@@ -21,6 +21,7 @@ public class Reservation {
     private String passengerEmail;
     
     private Long flightId;
+    private double flightPrice; 
     //private Long userId;
 
     private LocalDateTime reservationDate;

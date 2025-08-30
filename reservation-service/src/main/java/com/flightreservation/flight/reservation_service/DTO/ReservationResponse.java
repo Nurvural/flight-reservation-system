@@ -1,6 +1,5 @@
 package com.flightreservation.flight.reservation_service.DTO;
 
-
 import lombok.*;
 import java.time.LocalDateTime;
 
@@ -13,6 +12,7 @@ public class ReservationResponse {
     private String passengerName;
     private String passengerEmail;
     private Long flightId;
+    private double flightPrice;
     private Long userId;
     private LocalDateTime reservationDate;
     private String status;

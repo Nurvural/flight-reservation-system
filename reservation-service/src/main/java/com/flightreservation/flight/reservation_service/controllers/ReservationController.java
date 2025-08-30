@@ -16,6 +16,7 @@ import com.flightreservation.flight.reservation_service.DTO.ReservationResponse;
 import com.flightreservation.flight.reservation_service.services.ReservationService;
 
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/reservations")
@@ -24,16 +25,16 @@ public class ReservationController {
 	 private final ReservationService reservationService;
 
 	    @PostMapping
-	    public ResponseEntity<ReservationResponse> createReservation(
+	    public  Mono<ResponseEntity<ReservationResponse>> createReservation(
 	            @RequestBody ReservationCreateRequest request) {
-	        ReservationResponse response = reservationService.createReservation(request);
-	        return ResponseEntity.ok(response);
+	    	   return reservationService.createReservation(request)
+	    	            .map(response -> ResponseEntity.ok(response));
 	    }
 
 	    @PutMapping("/{id}")
-	    public ResponseEntity<ReservationResponse> updateReservation(@PathVariable Long id, @RequestBody ReservationCreateRequest request) {
-	    	 ReservationResponse response = reservationService.updateReservation(id, request);
-	    	    return ResponseEntity.ok(response);
+	    public Mono<ResponseEntity<ReservationResponse>> updateReservation(@PathVariable Long id, @RequestBody ReservationCreateRequest request) {
+	    	 return reservationService.updateReservation(id, request)
+	    	            .map(response -> ResponseEntity.ok(response));
 	    }
 	    @GetMapping
 	    public ResponseEntity<List<ReservationResponse>> getAllReservations() { 

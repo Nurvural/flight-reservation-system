@@ -1,8 +1,7 @@
 package com.flightreservation.flight.reservation_service.mapper;
 
-
-
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import com.flightreservation.flight.reservation_service.DTO.ReservationCreateRequest;
 import com.flightreservation.flight.reservation_service.DTO.ReservationResponse;
@@ -14,5 +13,6 @@ public interface ReservationMapper {
 
 	Reservation toEntity(ReservationCreateRequest request);
 
+	@Mapping(source = "flightPrice", target = "flightPrice")
 	ReservationResponse toDTO(Reservation reservation);
 }
