@@ -36,8 +36,8 @@ public class ReservationService {
 					Reservation reservation = mapper.toEntity(request);
 					reservation.setReservationDate(LocalDateTime.now());
 					reservation.setFlightPrice(price);
-					Reservation saved = reservationRepository.save(reservation); // blocking, ama basit projede kabul
-																					// edilebilir
+					Reservation saved = reservationRepository.save(reservation); // blocking
+																					
 					return Mono.just(mapper.toDTO(saved));
 				});
 	}
