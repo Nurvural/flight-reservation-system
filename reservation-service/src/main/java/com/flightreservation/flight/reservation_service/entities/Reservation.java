@@ -28,4 +28,9 @@ public class Reservation {
     private String specialRequests;
     private String seatNumber;
     private Integer baggageCount;
+    
+    @Column(name = "deleted", nullable = false)
+    @Builder.Default
+    private boolean deleted = false;
+
 }
