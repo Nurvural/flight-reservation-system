@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.flightreservation.flight.reservation_service.DTO.ReservationCreateRequest;
 import com.flightreservation.flight.reservation_service.DTO.ReservationResponse;
@@ -37,7 +36,6 @@ public class ReservationService {
 					reservation.setReservationDate(LocalDateTime.now());
 					reservation.setFlightPrice(price);
 					Reservation saved = reservationRepository.save(reservation); // blocking
-																					
 					return Mono.just(mapper.toDTO(saved));
 				});
 	}
@@ -57,7 +55,6 @@ public class ReservationService {
 					existing.setPassengerEmail(request.getPassengerEmail());
 					existing.setFlightId(request.getFlightId());
 					existing.setReservationDate(LocalDateTime.now());
-					existing.setStatus(request.getStatus());
 					existing.setSpecialRequests(request.getSpecialRequests());
 					existing.setSeatNumber(request.getSeatNumber());
 					existing.setBaggageCount(request.getBaggageCount());

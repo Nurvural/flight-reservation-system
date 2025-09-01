@@ -16,17 +16,15 @@ public class Reservation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String passengerName;
     private String passengerEmail;
-    
     private Long flightId;
     private double flightPrice; 
     //private Long userId;
-
     private LocalDateTime reservationDate;
-
-    private String status;
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    private ReservationStatus status = ReservationStatus.PENDING; // varsayılan enum değeri
     private String specialRequests;
     private String seatNumber;
     private Integer baggageCount;

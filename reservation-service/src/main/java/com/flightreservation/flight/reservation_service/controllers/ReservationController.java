@@ -15,6 +15,7 @@ import com.flightreservation.flight.reservation_service.DTO.ReservationCreateReq
 import com.flightreservation.flight.reservation_service.DTO.ReservationResponse;
 import com.flightreservation.flight.reservation_service.services.ReservationService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
@@ -25,14 +26,14 @@ public class ReservationController {
 	 private final ReservationService reservationService;
 
 	    @PostMapping
-	    public  Mono<ResponseEntity<ReservationResponse>> createReservation(
+	    public  Mono<ResponseEntity<ReservationResponse>> createReservation(@Valid
 	            @RequestBody ReservationCreateRequest request) {
 	    	   return reservationService.createReservation(request)
 	    	            .map(response -> ResponseEntity.ok(response));
 	    }
 
 	    @PutMapping("/{id}")
-	    public Mono<ResponseEntity<ReservationResponse>> updateReservation(@PathVariable Long id, @RequestBody ReservationCreateRequest request) {
+	    public Mono<ResponseEntity<ReservationResponse>> updateReservation(@Valid @PathVariable Long id, @RequestBody ReservationCreateRequest request) {
 	    	 return reservationService.updateReservation(id, request)
 	    	            .map(response -> ResponseEntity.ok(response));
 	    }
