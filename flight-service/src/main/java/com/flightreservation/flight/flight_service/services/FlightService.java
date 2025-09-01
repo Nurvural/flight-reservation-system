@@ -2,13 +2,13 @@ package com.flightreservation.flight.flight_service.services;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.flightreservation.flight.flight_service.dto.requestDTO.FlightCreateRequest;
 import com.flightreservation.flight.flight_service.dto.requestDTO.FlightUpdateRequest;
 import com.flightreservation.flight.flight_service.dto.responseDTO.FlightResponse;
+import com.flightreservation.flight.flight_service.dto.responseDTO.FlightSearchCriteria;
 import com.flightreservation.flight.flight_service.entities.Flight;
 import com.flightreservation.flight.flight_service.exception.BusinessException;
 import com.flightreservation.flight.flight_service.exception.ResourceNotFoundException;
@@ -16,6 +16,7 @@ import com.flightreservation.flight.flight_service.mapper.FlightMapper;
 import com.flightreservation.flight.flight_service.repositories.AirlineRepository;
 import com.flightreservation.flight.flight_service.repositories.AirportRepository;
 import com.flightreservation.flight.flight_service.repositories.FlightRepository;
+import com.flightreservation.flight.flight_service.specifications.FlightSpecification;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -114,17 +115,26 @@ public class FlightService {
 		return flightMapper.toResponse(savedFlight);
 	}
 
-	public List<FlightResponse> getAllFlights() {
+	public List<FlightResponse> searchFlights(FlightSearchCriteria criteria) {
+		// Specification oluştur
+		var spec = FlightSpecification.getFlightsByCriteria(criteria);
+
+		// Repository’den filtrelenmiş uçuşları al ve DTO’ya çevir
+		return flightRepository.findAll(spec).stream().map(flightMapper::toResponse).collect(Collectors.toList());
+	}
+
+	public List<FlightResponse> findAllByDeletedFalse(Sort sort) {
 		log.info("Fetching all flights");
-		List<FlightResponse> flights = flightRepository.findAll(Sort.by(Sort.Direction.ASC, "id")).stream()
+		List<FlightResponse> flights = flightRepository.findAllByDeletedFalse(sort).stream()
 				.map(flightMapper::toResponse).collect(Collectors.toList());
 		log.info("Total flights found: {}", flights.size());
 		return flights;
 	}
 
-	public FlightResponse getFlightById(Long id) {
+
+	public FlightResponse getActiveFlightById(Long id) {
 		log.info("Fetching flight with id: {}", id);
-		Flight flight = flightRepository.findById(id).orElseThrow(() -> {
+		Flight flight = flightRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> {
 			log.error("Flight not found with id: {}", id);
 			return new ResourceNotFoundException("Flight not found with id: " + id);
 		});
@@ -133,12 +143,15 @@ public class FlightService {
 	}
 
 	public void deleteFlight(Long id) {
-		log.info("Deleting flight with id: {}", id);
-		Flight flight = flightRepository.findById(id).orElseThrow(() -> {
+		log.info("Soft deleting flight with id: {}", id);
+		Flight flight = flightRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> {
 			log.error("Flight not found with id: {}", id);
 			return new ResourceNotFoundException("Flight not found with id: " + id);
 		});
-		flightRepository.delete(flight);
-		log.info("Flight deleted with id: {}", id);
+		flight.setDeleted(true);
+		flightRepository.save(flight);
+		log.info("Flight soft deleted with id: {}", id);
 	}
+
+
 }

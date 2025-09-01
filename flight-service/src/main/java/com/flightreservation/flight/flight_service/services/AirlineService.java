@@ -1,7 +1,6 @@
 package com.flightreservation.flight.flight_service.services;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;

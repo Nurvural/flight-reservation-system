@@ -8,10 +8,9 @@ import com.flightreservation.flight.flight_service.entities.City;
 
 @Mapper(componentModel = "spring") //mapper inject edildi.
 public interface CityMapper {
-
+	
+	City toEntity(CityDTO cityDTO);
 	
 	@Mapping(source = "country.id", target = "countryId")
 	CityDTO toDTO(City city);
-
-	City toEntity(CityDTO cityDTO);
 }

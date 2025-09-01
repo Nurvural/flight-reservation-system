@@ -1,6 +1,7 @@
 package com.flightreservation.flight.flight_service.entities;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -46,5 +47,9 @@ public class Flight {
 
     private Integer totalSeats;
     private Integer availableSeats;
+    
+    @Column(name = "deleted", nullable = false)
+    @Builder.Default
+    private boolean deleted = false;
 
 }
