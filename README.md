@@ -1,17 +1,7 @@
 ✈️ Flight Reservation Microservices System
 
 🔹 Proje Hakkında
-Bu proje, uçuş rezervasyonlarını yönetmek için geliştirilmiş bir microservices tabanlı backend sistemidir.
-
-Sistem aşağıdaki microservisleri içerir:
-
-Flight Service → Uçuş CRUD ve listeleme
-
-Reservation Service → Rezervasyon oluşturma ve event üretme
-
-User Service → Kullanıcı yönetimi ve JWT authentication
-
-Admin Controller → Airport ve Flight CRUD, rezervasyon yönetimi
+Bu proje, uçuş rezervasyonlarını yönetmek için geliştirilmiş microservices tabanlı bir backend sistemidir. Kullanıcılar uçuşları görüntüleyebilir, rezervasyon oluşturabilir, ödeme yapabilir ve yönetici işlemlerini gerçekleştirebilir. Sistem JWT tabanlı authentication ve rol yönetimi ile güvenli bir yapı sağlar.
 
 🛠️ Teknoloji Yığını
 
@@ -19,6 +9,8 @@ Backend & Core
 - Java 21 / Spring Boot
 - Spring Data JPA
 - REST API
+- WebClient
+- Spring WebFlux
 - Stream API
 - Spring Validation
 - Global Exception Handling
