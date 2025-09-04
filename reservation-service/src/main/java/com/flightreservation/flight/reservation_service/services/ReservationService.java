@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.flightreservation.flight.reservation_service.DTO.ReservationCreateRequest;
 import com.flightreservation.flight.reservation_service.DTO.ReservationResponse;
 import com.flightreservation.flight.reservation_service.client.FlightWebClient;
+import com.flightreservation.flight.reservation_service.client.UserWebClient;
 import com.flightreservation.flight.reservation_service.entities.Reservation;
 import com.flightreservation.flight.reservation_service.exception.BusinessException;
 import com.flightreservation.flight.reservation_service.exception.ResourceNotFoundException;
@@ -19,6 +20,7 @@ import com.flightreservation.flight.reservation_service.repositories.Reservation
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Service
 @RequiredArgsConstructor
@@ -28,16 +30,41 @@ public class ReservationService {
 	private final ReservationRepository reservationRepository;
 	private final ReservationMapper mapper;
 	private final FlightWebClient flightClient;
+	private final UserWebClient userClient;
 
-	public Mono<ReservationResponse> createReservation(ReservationCreateRequest request) {
+	public Mono<ReservationResponse> createReservation(ReservationCreateRequest request, String jwtToken) {
 		return flightClient.checkFlightExists(request.getFlightId())
 				.then(flightClient.getFlightPrice(request.getFlightId())).flatMap(price -> {
+					 if (request.getUserId() != null) {
+					     // Kayıtlı kullanıcı - önce user bilgilerini al
+			                return userClient.getUserById(request.getUserId(), jwtToken)
+			                    .flatMap(user -> {
+			                        Reservation reservation = mapper.toEntity(request);
+			                        reservation.setPassengerName(user.getName());
+			                        reservation.setPassengerEmail(user.getEmail());
+			                        reservation.setUserId(request.getUserId());
+			                        reservation.setReservationDate(LocalDateTime.now());
+			                        reservation.setFlightPrice(price);
+			                  	  return Mono.fromCallable(() -> reservationRepository.save(reservation))
+				                           .subscribeOn(Schedulers.boundedElastic())
+				                           .map(mapper::toDTO);
+			                    });
+				     } else {
+				    	   // Guest kullanıcı validation
+		                    if (request.getPassengerName() == null || request.getPassengerName().isBlank() ||
+		                        request.getPassengerEmail() == null || request.getPassengerEmail().isBlank()) {
+		                        return Mono.error(new IllegalArgumentException(
+		                                "Guest kullanıcı için passengerName ve passengerEmail zorunludur"));
+		                    }
 					Reservation reservation = mapper.toEntity(request);
 					reservation.setReservationDate(LocalDateTime.now());
 					reservation.setFlightPrice(price);
-					Reservation saved = reservationRepository.save(reservation); // blocking
-					return Mono.just(mapper.toDTO(saved));
+					  return Mono.fromCallable(() -> reservationRepository.save(reservation))
+	                           .subscribeOn(Schedulers.boundedElastic())
+	                           .map(mapper::toDTO);
+				     }
 				});
+		 
 	}
 
 	public Mono<ReservationResponse> updateReservation(Long id, ReservationCreateRequest request) {

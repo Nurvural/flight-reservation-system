@@ -13,17 +13,17 @@ import lombok.*;
 @Builder
 public class ReservationCreateRequest {
 	
-    @NotBlank(message = "Yolcu adı boş olamaz")
-    @Size(min = 2, max = 50, message = "Yolcu adı 2 ile 50 karakter arasında olmalıdır")
+
     private String passengerName;
 
-    @NotBlank(message = "E-posta boş olamaz")
-    @Email(message = "Geçerli bir e-posta adresi giriniz")
+
     private String passengerEmail;
 
     @NotNull(message = "Uçuş ID boş olamaz")
     private Long flightId;
-
+    
+   private Long userId;
+    
     private String specialRequests;
 
     @NotBlank(message = "Koltuk numarası boş olamaz")
@@ -32,4 +32,6 @@ public class ReservationCreateRequest {
     @NotNull(message = "Bagaj sayısı boş olamaz")
     @Min(value = 0, message = "Bagaj sayısı 0'dan küçük olamaz")
     private Integer baggageCount;
+    
+    public interface Guest {}
 }

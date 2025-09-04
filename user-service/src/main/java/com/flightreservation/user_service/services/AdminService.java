@@ -39,16 +39,6 @@ public class AdminService {
         return admins;
     }
 
-    public AdminResponse getAdminById(Long id) {
-        log.info("Fetching admin with id: {}", id);
-        Admin admin = adminRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.warn("Admin not found with id: {}", id);
-                    return new ResourceNotFoundException("Admin not found with id: " + id);
-                });
-        return adminMapper.toResponse(admin);
-    }
-
     public AdminResponse createAdmin(AdminCreateRequest request) {
         log.info("Creating new admin with email: {}", request.getEmail());
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -91,14 +81,5 @@ public class AdminService {
         return adminMapper.toResponse(updated);
     }
 
-    public void deleteAdmin(Long id) {
-        log.info("Deleting admin with id: {}", id);
-        Admin admin = adminRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.warn("Admin not found with id: {}", id);
-                    return new ResourceNotFoundException("Admin not found with id: " + id);
-                });
-        adminRepository.delete(admin);
-        log.info("Admin deleted with id: {}", id);
-    }
+  
 }

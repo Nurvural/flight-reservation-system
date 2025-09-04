@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 public class Reservation {
 
     @Id
@@ -20,7 +20,7 @@ public class Reservation {
     private String passengerEmail;
     private Long flightId;
     private double flightPrice; 
-    //private Long userId;
+    private Long userId;
     private LocalDateTime reservationDate;
     @Builder.Default
     @Enumerated(EnumType.STRING)

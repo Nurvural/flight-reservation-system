@@ -27,13 +27,6 @@ public class AdminController {
         return ResponseEntity.ok(admins);
     }
 
-    // ID ile admin getir
-    @GetMapping("/{id}")
-    public ResponseEntity<AdminResponse> getAdminById(@PathVariable Long id) {
-        AdminResponse admin = adminService.getAdminById(id);
-        return ResponseEntity.ok(admin);
-    }
-
     // Yeni admin oluştur
     @PostMapping
     public ResponseEntity<AdminResponse> createAdmin(@Valid @RequestBody AdminCreateRequest request) {
@@ -49,10 +42,4 @@ public class AdminController {
         return ResponseEntity.ok(updatedAdmin);
     }
 
-    // Admin sil
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAdmin(@PathVariable Long id) {
-        adminService.deleteAdmin(id);
-        return ResponseEntity.noContent().build();
-    }
 }

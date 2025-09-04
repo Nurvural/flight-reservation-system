@@ -8,9 +8,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.http.HttpHeaders;
 import com.flightreservation.flight.reservation_service.DTO.ReservationCreateRequest;
 import com.flightreservation.flight.reservation_service.DTO.ReservationResponse;
 import com.flightreservation.flight.reservation_service.services.ReservationService;
@@ -26,9 +27,13 @@ public class ReservationController {
 	 private final ReservationService reservationService;
 
 	    @PostMapping
-	    public  Mono<ResponseEntity<ReservationResponse>> createReservation(@Valid
+	    public  Mono<ResponseEntity<ReservationResponse>> createReservation(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @Valid
 	            @RequestBody ReservationCreateRequest request) {
-	    	   return reservationService.createReservation(request)
+	        String jwtToken = null;
+	        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+	            jwtToken = authHeader.substring(7); 
+	        }
+	    	   return reservationService.createReservation(request, jwtToken)
 	    	            .map(response -> ResponseEntity.ok(response));
 	    }
 

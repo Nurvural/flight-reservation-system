@@ -27,7 +27,6 @@ public class CustomerService{
     private final CustomerMapper customerMapper;
     private final PasswordEncoder passwordEncoder; 
  //   private final VerificationService verificationService;
-    
 
     public List<CustomerResponse> getAllCustomers() {
         log.info("Fetching all customers");
@@ -39,15 +38,6 @@ public class CustomerService{
         return customers;
     }
 
-    public CustomerResponse getCustomerById(Long id) {
-        log.info("Fetching customer with id: {}", id);
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.warn("Customer not found with id: {}", id);
-                    return new ResourceNotFoundException("Customer not found with id: " + id);
-                });
-        return customerMapper.toResponse(customer);
-    }
 
     public CustomerResponse createCustomer(CustomerCreateRequest request) {
         log.info("Creating new customer with email: {}", request.getEmail());
@@ -91,16 +81,5 @@ public class CustomerService{
         Customer updated = customerRepository.save(customer);
         log.info("Customer updated with id: {}", updated.getId());
         return customerMapper.toResponse(updated);
-    }
-
-    public void deleteCustomer(Long id) {
-        log.info("Deleting customer with id: {}", id);
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.warn("Customer not found with id: {}", id);
-                    return new ResourceNotFoundException("Customer not found with id: " + id);
-                });
-        customerRepository.delete(customer);
-        log.info("Customer deleted with id: {}", id);
     }
 }

@@ -47,6 +47,10 @@ public abstract class User {
     @Column(name = "token_expiry")
     private LocalDateTime tokenExpiry;
     
+    @Column(name = "deleted", nullable = false)
+    @Builder.Default
+    private boolean deleted = false;
+    
     /*@Column(name="enabled")
     private boolean enabled = false;
 

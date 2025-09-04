@@ -27,13 +27,6 @@ public class CustomerController {
         return ResponseEntity.ok(customers);
     }
 
-    // ID ile müşteri getir
-    @GetMapping("/{id}")
-    public ResponseEntity<CustomerResponse> getCustomerById(@PathVariable Long id) {
-        CustomerResponse customer = customerService.getCustomerById(id);
-        return ResponseEntity.ok(customer);
-    }
-
     // Yeni müşteri oluştur
     @PostMapping
     public ResponseEntity<CustomerResponse> createCustomer(
@@ -51,10 +44,4 @@ public class CustomerController {
         return ResponseEntity.ok(updatedCustomer);
     }
 
-    // Müşteri sil
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
-        customerService.deleteCustomer(id);
-        return ResponseEntity.noContent().build();
-    }
 }
