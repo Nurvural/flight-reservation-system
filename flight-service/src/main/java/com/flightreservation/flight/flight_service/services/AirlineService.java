@@ -2,6 +2,8 @@ package com.flightreservation.flight.flight_service.services;
 
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +24,7 @@ public class AirlineService {
         this.airlineRepository = airlineRepository;
         this.airlineMapper = airlineMapper;
     }
-
+    @CacheEvict(value = {"airlines", "airline"}, allEntries = true)
     public AirlineDTO createAirline(AirlineDTO dto) {
         if (airlineRepository.existsByCode(dto.getCode())) {
             throw new BusinessException("Airline code already exists: " + dto.getCode());
@@ -32,6 +34,7 @@ public class AirlineService {
         return airlineMapper.toDTO(airlineRepository.save(airline));
     }
 
+    @CacheEvict(value = {"airlines", "airline"}, allEntries = true)
     public AirlineDTO updateAirline(Long id, AirlineDTO dto) {
         Airline airline = airlineRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Airline not found with id: " + id));
@@ -40,12 +43,11 @@ public class AirlineService {
         airline.setCode(dto.getCode());
         return airlineMapper.toDTO(airlineRepository.save(airline));
     }
-
+    @Cacheable(value = "airlines")
     public List<AirlineDTO> getAllAirlines() {
         List<Airline> airlines = airlineRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
         return airlineMapper.toDTOList(airlines);
     }
-
 
     public AirlineDTO getAirlineById(Long id) {
         Airline airline = airlineRepository.findById(id)
@@ -53,6 +55,7 @@ public class AirlineService {
         return airlineMapper.toDTO(airline);
     }
 
+    @CacheEvict(value = {"airlines", "airline"}, allEntries = true)
     public void deleteAirline(Long id) {
         Airline airline = airlineRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Airline not found with id: " + id));

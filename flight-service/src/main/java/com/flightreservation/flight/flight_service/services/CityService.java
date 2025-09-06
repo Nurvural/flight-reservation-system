@@ -4,6 +4,8 @@ package com.flightreservation.flight.flight_service.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +40,7 @@ public class CityService {
     }*/
 
     @Transactional
+    @CacheEvict(value = {"cities", "city"}, allEntries = true)
     public CityDTO createCity(CityDTO dto) {
         boolean exists = cityRepository.existsByNameAndCountryId(dto.getName(), dto.getCountryId());
         if (exists) {
@@ -55,7 +58,7 @@ public class CityService {
         City savedCity = cityRepository.save(city);
         return cityMapper.toDTO(savedCity);
     }
-
+    @CacheEvict(value = {"cities", "city"}, allEntries = true)
     public CityDTO updateCity(Long id, CityDTO dto) {
         City city = cityRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("City not found with id: " + id));
@@ -65,20 +68,19 @@ public class CityService {
                 .orElseThrow(() -> new ResourceNotFoundException("Country not found with id: " + dto.getCountryId())));
         return cityMapper.toDTO(cityRepository.save(city)); 
     }
-
+    @Cacheable(value = "cities")
     public List<CityDTO> getAllCities() {
         return cityRepository.findAll(Sort.by(Sort.Direction.ASC, "id"))
         	    .stream()
         	    .map(cityMapper::toDTO)
         	    .collect(Collectors.toList());
     }
-
     public CityDTO getCityById(Long id) {
         City city = cityRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("City not found with id: " + id));
         return cityMapper.toDTO(city);
     }
-
+    @CacheEvict(value = {"cities", "city"}, allEntries = true)
     public void deleteCity(Long id) {
         City city = cityRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("City not found with id: " + id));

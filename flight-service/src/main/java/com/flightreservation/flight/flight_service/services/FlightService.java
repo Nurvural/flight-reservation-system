@@ -2,6 +2,9 @@ package com.flightreservation.flight.flight_service.services;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +41,7 @@ public class FlightService {
 	}
 
 	// Yeni uçuş oluşturma
+	@CacheEvict(value = {"flights", "flight"}, allEntries = true)
 	public FlightResponse createFlight(FlightCreateRequest flightCreateRequest) {
 		log.info("Creating flight: {}", flightCreateRequest);
 
@@ -75,6 +79,7 @@ public class FlightService {
 	}
 
 	// Mevcut uçuşu güncelleme
+	@CacheEvict(value = {"flights", "flight"}, allEntries = true)
 	public FlightResponse updateFlight(Long id, FlightUpdateRequest flightUpdateRequest) {
 		log.info("Updating flight with id: {}", id);
 
@@ -122,7 +127,8 @@ public class FlightService {
 		// Repository’den filtrelenmiş uçuşları al ve DTO’ya çevir
 		return flightRepository.findAll(spec).stream().map(flightMapper::toResponse).collect(Collectors.toList());
 	}
-
+	
+	@Cacheable(value = "flights")
 	public List<FlightResponse> findAllByDeletedFalse(Sort sort) {
 		log.info("Fetching all flights");
 		List<FlightResponse> flights = flightRepository.findAllByDeletedFalse(sort).stream()
@@ -130,8 +136,6 @@ public class FlightService {
 		log.info("Total flights found: {}", flights.size());
 		return flights;
 	}
-
-
 	public FlightResponse getActiveFlightById(Long id) {
 		log.info("Fetching flight with id: {}", id);
 		Flight flight = flightRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> {
@@ -142,6 +146,7 @@ public class FlightService {
 		return flightMapper.toResponse(flight);
 	}
 
+	@CacheEvict(value = {"flights", "flight"}, allEntries = true)
 	public void deleteFlight(Long id) {
 		log.info("Soft deleting flight with id: {}", id);
 		Flight flight = flightRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> {

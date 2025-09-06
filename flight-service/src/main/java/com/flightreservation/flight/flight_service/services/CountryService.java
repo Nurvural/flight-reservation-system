@@ -3,6 +3,8 @@ package com.flightreservation.flight.flight_service.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +32,7 @@ public class CountryService {
                 .code(country.getCode())
                 .build();
     }*/
-
+    @CacheEvict(value = {"countries", "country"}, allEntries = true)
     public CountryDTO createCountry(CountryDTO countryDTO) {
         if (countryRepository.existsByCode(countryDTO.getCode())) {
             throw new BusinessException("Country code already exists: " + countryDTO.getCode());
@@ -39,7 +41,7 @@ public class CountryService {
         Country saved = countryRepository.save(country);
         return countryMapper.toDTO(saved); // Entity → DTO
     }
-    
+    @CacheEvict(value = {"countries", "country"}, allEntries = true)
     public CountryDTO updateCountry(Long id, CountryDTO countryDTO) {
         Country country = countryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Country not found with id: " + id));
@@ -47,7 +49,7 @@ public class CountryService {
         country.setCode(countryDTO.getCode());
         return countryMapper.toDTO(countryRepository.save(country));
     }
-
+    @Cacheable(value = "countries")
     public List<CountryDTO > getAllCountries() {
         return countryRepository.findAll(Sort.by(Sort.Direction.ASC, "id"))
                 .stream()
@@ -61,6 +63,7 @@ public class CountryService {
         return countryMapper.toDTO(country);
     }
 
+    @CacheEvict(value = {"countries", "country"}, allEntries = true)
     public void deleteCountry(Long id) {
         Country country = countryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Country not found with id: " + id));

@@ -2,6 +2,8 @@ package com.flightreservation.flight.flight_service.services;
 
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +29,7 @@ public class AirportService {
 		this.cityRepository = cityRepository;
 		this.airportMapper = airportMapper;
 	}
-
+	@CacheEvict(value = {"airports", "airport"}, allEntries = true)
 	public AirportDTO createAirport(AirportDTO dto) {
 		// İş kuralı: aynı kodlu havalimanı tekrar olamaz
 		if (airportRepository.existsByCode(dto.getCode())) {
@@ -42,7 +44,7 @@ public class AirportService {
 
 		return airportMapper.toDTO(airportRepository.save(airport));
 	}
-
+    @CacheEvict(value = {"airports", "airport"}, allEntries = true)
 	public AirportDTO updateAirport(Long id, AirportDTO dto) {
 		Airport airport = airportRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Airport not found with id: " + id));
@@ -56,7 +58,7 @@ public class AirportService {
 
 		return airportMapper.toDTO(airportRepository.save(airport));
 	}
-
+    @Cacheable(value = "airports")
 	public List<AirportDTO> getAllAirports() {
 		return airportMapper.toDTOList(airportRepository.findAll(Sort.by(Sort.Direction.ASC, "id")));
 	}
@@ -67,6 +69,7 @@ public class AirportService {
 		return airportMapper.toDTO(airport);
 	}
 
+    @CacheEvict(value = {"airports", "airport"}, allEntries = true)
 	public void deleteAirport(Long id) {
 		Airport airport = airportRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Airport not found with id: " + id));
