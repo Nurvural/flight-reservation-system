@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -32,40 +33,41 @@ public class ReservationService {
 	private final FlightWebClient flightClient;
 	private final UserWebClient userClient;
 
-	public Mono<ReservationResponse> createReservation(ReservationCreateRequest request, String jwtToken) {
-		return flightClient.checkFlightExists(request.getFlightId())
-				.then(flightClient.getFlightPrice(request.getFlightId())).flatMap(price -> {
-					 if (request.getUserId() != null) {
-					     // Kayıtlı kullanıcı - önce user bilgilerini al
-			                return userClient.getUserById(request.getUserId(), jwtToken)
-			                    .flatMap(user -> {
-			                        Reservation reservation = mapper.toEntity(request);
-			                        reservation.setPassengerName(user.getName());
-			                        reservation.setPassengerEmail(user.getEmail());
-			                        reservation.setUserId(request.getUserId());
-			                        reservation.setReservationDate(LocalDateTime.now());
-			                        reservation.setFlightPrice(price);
-			                  	  return Mono.fromCallable(() -> reservationRepository.save(reservation))
-				                           .subscribeOn(Schedulers.boundedElastic())
-				                           .map(mapper::toDTO);
-			                    });
-				     } else {
-				    	   // Guest kullanıcı validation
-		                    if (request.getPassengerName() == null || request.getPassengerName().isBlank() ||
-		                        request.getPassengerEmail() == null || request.getPassengerEmail().isBlank()) {
-		                        return Mono.error(new IllegalArgumentException(
-		                                "Guest kullanıcı için passengerName ve passengerEmail zorunludur"));
-		                    }
-					Reservation reservation = mapper.toEntity(request);
-					reservation.setReservationDate(LocalDateTime.now());
-					reservation.setFlightPrice(price);
-					  return Mono.fromCallable(() -> reservationRepository.save(reservation))
-	                           .subscribeOn(Schedulers.boundedElastic())
-	                           .map(mapper::toDTO);
-				     }
-				});
-		 
+	public Mono<ReservationResponse> createReservation(ReservationCreateRequest request, String userEmail) {
+	    return flightClient.checkFlightExists(request.getFlightId())
+	        .then(flightClient.getFlightPrice(request.getFlightId()))
+	        .flatMap(price -> {
+	            Reservation reservation = mapper.toEntity(request);
+	            reservation.setReservationDate(LocalDateTime.now());
+	            reservation.setFlightPrice(price);
+
+	            if (userEmail != null && !userEmail.isBlank()) {
+	                // Login olmuş kullanıcı, bilgileri JWT'den alıyoruz
+	                reservation.setPassengerEmail(userEmail);
+	                // Eğer isim de JWT veya başka bir header’dan geliyorsa ekleyebilirsin
+	                // reservation.setPassengerName(userName);
+	            } else {
+	                // Guest kullanıcı
+	                if (request.getPassengerName() == null || request.getPassengerName().isBlank() ||
+	                    request.getPassengerEmail() == null || request.getPassengerEmail().isBlank()) {
+	                    return Mono.error(new IllegalArgumentException(
+	                        "Guest kullanıcı için passengerName ve passengerEmail zorunludur"));
+	                }
+	                reservation.setPassengerName(request.getPassengerName());
+	                reservation.setPassengerEmail(request.getPassengerEmail());
+	            }
+
+	            return Mono.fromCallable(() -> reservationRepository.save(reservation))
+	                       .subscribeOn(Schedulers.boundedElastic())
+	                       .map(mapper::toDTO);
+	        })
+	        .doOnError(err -> {
+	            System.err.println("createReservation error: " + err.getMessage());
+	            err.printStackTrace();
+	        });
 	}
+
+
 
 	public Mono<ReservationResponse> updateReservation(Long id, ReservationCreateRequest request) {
 		log.info("Updating reservation with id: {}", id);
@@ -107,6 +109,13 @@ public class ReservationService {
 		log.info("Total reservations found: {}", reservations.size());
 		return reservations;
 	}
+	public List<ReservationResponse> getReservationsByEmail(String email) {
+	    return reservationRepository.findByPassengerEmailAndDeletedFalse(email)
+	            .stream()
+	            .map(mapper::toDTO)
+	            .collect(Collectors.toList());
+	}
+
 
 	public ReservationResponse getReservationById(Long id) {
 		log.info("Fetching reservation with id: {}", id);

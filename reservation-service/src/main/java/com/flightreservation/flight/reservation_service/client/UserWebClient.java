@@ -11,17 +11,20 @@ import reactor.core.publisher.Mono;
 @Component
 public class UserWebClient {
 
-	 private final WebClient webClient;
+	/* private final WebClient webClient;
 	 
 	   public UserWebClient(WebClient.Builder webClientBuilder) {
 	    	this.webClient = webClientBuilder.baseUrl("http://USER-SERVICE/api/users").build();
 	    }
 	   
-	    public Mono<UserResponse> getUserById(Long userId, String token) {
+	    public Mono<UserResponse> getUserByEmail(String email) {
 	        return webClient.get()
-	                .uri("/{id}", userId)
-	                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+	                .uri(uriBuilder -> uriBuilder
+	                        .path("/by-email")
+	                        .queryParam("email", email)
+	                        .build())
+	                .header("X-User-Email", email) // Gateway üzerinden header geçiyor
 	                .retrieve()
 	                .bodyToMono(UserResponse.class);
-	    }
+	    }*/
 }
