@@ -1,6 +1,7 @@
 ✈️ Flight Reservation Microservices System
 
 🔹 Proje Hakkında
+
 Bu proje, uçuş rezervasyonlarını yönetmek için geliştirilmiş microservices tabanlı bir backend sistemidir. Kullanıcılar uçuşları görüntüleyebilir, rezervasyon oluşturabilir, ödeme yapabilir ve yönetici işlemlerini gerçekleştirebilir. Sistem JWT tabanlı authentication ve rol yönetimi ile güvenli bir yapı sağlar.
 
 🛠️ Teknoloji Yığını
