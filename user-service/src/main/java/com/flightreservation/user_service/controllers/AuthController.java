@@ -46,7 +46,7 @@ public class AuthController {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "User not found with email: " + request.getEmail()));
 
-        String token = jwtUtil.generateToken(user.getEmail());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
         log.info("Token generated for email: {}", request.getEmail());
 
         return new LoginResponse(token, user.getRole().name(), user.getEmail());

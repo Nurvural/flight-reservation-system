@@ -22,9 +22,10 @@ public class JwtUtil {
     }
 
     // Token üretme
-    public String generateToken(String email) {
+    public String generateToken(String email, String role) {
         return Jwts.builder()
                 .setSubject(email) // token’in sahibi 
+                .claim("role", role)
                 .setIssuedAt(new Date()) // oluşturulma tarihi
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION)) // geçerlilik süresi
                 .signWith(SECRET_KEY)
